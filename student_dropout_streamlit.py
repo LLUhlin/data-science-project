@@ -26,7 +26,10 @@ from sklearn.neural_network import MLPClassifier
 import streamlit as st
 
 # import data
-df = pd.read_csv('/Users/nima/Downloads/PROJ25/gruppuppgift/02_dataset/student_dropout_success/data.csv', sep=';')
+# df = pd.read_csv('/Users/nima/Downloads/PROJ25/gruppuppgift/02_dataset/student_dropout_success/data.csv', sep=';')
+""" Changes done to use relative path instead of absolute path to ensure it works on multiple machines """
+df = pd.read_csv('./data.csv', sep=';') # using relative path instead to not be locked to 1 computer
+
 
 # Creating a navigation bar with 5 different sections the user can choose from.
 
