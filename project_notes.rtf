@@ -1,0 +1,118 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2708
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica-Bold;\f1\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;\red251\green2\blue7;}
+{\*\expandedcolortbl;;\cssrgb\c100000\c14913\c0;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww12220\viewh17720\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\b\fs24 \cf0 Data Science Project: 
+\f1\b0 \
+\
+
+\f0\b POC Student_dropout_success dataset\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f1\b0 \cf0 portugisiskt dataset\
+https://archive-beta.ics.uci.edu/dataset/697/predict+students+dropout+and+academic+success\
+multiclass classification (dropout, success or enrolled)\
+en datafil: data.csv, semikolon-separerad, 4424 rader, 37 kolumner\
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\b \cf0 ML project checklist:
+\f1\b0 \
+\
+
+\f0\b Allm\'e4nt:
+\f1\b0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+\cf2 - skriva funktioner f\'f6r att de ska kunna \'e5teranv\'e4ndas.\
+- ok att droppa en target feature som tex Enrolled, om du argumenterar f\'f6r det.\
+- ha med tabeller i rapporten f\'f6r vg-uppgiften\
+- begr\'e4nsa din kod i slut\'e4ndan och ha bara med det som du kommer anv\'e4nda i slut\'e4ndan, kanske 2-3 modeller f\'f6r liten j\'e4mf\'f6relse.\
+- kolla konfidensintervall, beta1, beta2\'85\cf0 \
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\b \cf0 1. Frame the problem and look at the big picture.
+\f1\b0 \
+ - G\'e5r det att prediktera om en student kommer att hoppa av sin utbildning eller inte?\
+\
+
+\f0\b 2. Get the data.
+\f1\b0 \
+ \cf2 - Sample a test set, put it aside, and never look at it (no data snooping!).
+\f0\b  valideringsdataset?
+\f1\b0 \cf0 \
+ - head, info\'85\
+\
+
+\f0\b 3. Explore the data to gain insights.
+\f1\b0 \
+ - EDA\
+ - deskriptiv statistik p\'e5 din data\
+\
+
+\f0\b 4. Prepare the data to better expose the underlying data patterns to Machine Learning algorithms.\
+ - 
+\f1\b0 Target: textform, g\'f6ra om till numerisk (sklearn.preprocessing.LabelEncoder)\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+\cf2  - Eventuellt ta bort Enrolled s\'e5 att vi bara har Dropout och Success, ger detta b\'e4ttre prediktioner?\
+ - Balansera dataset, f\'f6r att se vad det ger f\'f6r resultat p\'e5 modellerna?\
+ - Metoder f\'f6r balansering: \cf0 imblearn.under_sampling.RandomUnderSampler, sklearn.cross_validation.StratifiedShuffleSplit\
+\cf2  - Ta bort on\'f6diga features (de med minst korrelation mot Target)\
+ - Splitta med train, test, validering (70/20/10) (nu bara train/test 80/20)
+\f0\b \cf0 \
+\
+
+\f1\b0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\b \cf0 5. Explore many different models and shortlist the best ones.
+\f1\b0 \
+ - shortlist promising models, v\'e4lj modeller som \'e4r bra p\'e5 olika saker.\
+ - testat 15 modeller med default settings\
+ - 4 valdes ut f\'f6r hyperparameter tuning. (RandomizedSearchCV)\
+ - Samma 4 anv\'e4ndes f\'f6r ensemble learning. (VotingClassifier)\
+\
+
+\f0\b 6. Fine-tune your models and combine them into a great solution.
+\f1\b0 \
+ - hyperparameter tuning did not improve, what next?\
+ - ensemble method did improve somewhat, what\'92s next?\
+\
+7. Present your solution.\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+\cf2  - skriva kod i Spyder f\'f6r Streamlit. (p\'e5b\'f6rjat)\cf0 \
+\
+8. Launch, monitor, and maintain your system.\
+ - \
+\
+\
+\
+\
+Examination kommer att ske genom:\
+- 1 gruppuppgift vilken ska redovisas muntligt i grupp, individuell bed\'f6mning (IG/G)\
+- 1 individuell skriftlig inl\'e4mningsuppgift (IG/G/VG)\
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\b \cf0 F\'f6rslag p\'e5 struktur f\'f6r skriftlig inl\'e4mningsuppgift:
+\f1\b0 \
+1. Introduktion som inneh\'e5ller underrubrikerna: - Bakgrund\
+- Syfte och Fr\'e5gest\'e4llning\
+2. Databeskrivning / EDA (Exploratory Data Analysis)\
+3. Metod och Modeller (Teori)\
+4. Projekt Resultat och Analys\
+- Resultat \'e4r deskriptiva i sin natur, t.ex. att man presenterar RMSE f\'f6r sina olika modeller. Ofta\
+kan tabeller vara anv\'e4ndbara vid redog\'f6relse av resultaten.\
+5. Slutsats och f\'f6rslag p\'e5 potentiell vidareutveckling.\
+\
+\'d6vrigt om rapport:\
+1. Utmaningar du haft under arbetet samt hur du hanterat dem.\
+2. Hur grupparbetet har fungerat och hur ni organiserat ert arbete. Reflektera vad som varit bra/mindre bra.\
+3. Vilket betyg du anser att du skall ha och varf\'f6r.\
+Skriv koncist och fundera p\'e5 vad du vill lyfta fram. Rapport p\'e5 ca 5 sidor.\
+\
+\
+}
