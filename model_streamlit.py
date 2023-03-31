@@ -64,10 +64,20 @@ class Model():
         self.X_train, self.X_te_va, self.y_train, self.y_te_va = train_test_split(self.X, self.y, test_size = 0.3, stratify=self.y)
         self.X_test, self.X_val, self.y_test, self.y_val = train_test_split(self.X_te_va, self.y_te_va, test_size = 0.5, stratify=self.y_te_va)
 
-        # Scaling the data with StandardScaler
-        self.X_train_scaled = StandardScaler().fit_transform(self.X_train.astype(np.float64))
-        self.X_test_scaled = StandardScaler().fit_transform(self.X_test.astype(np.float64))
-        self.X_val_scaled = StandardScaler().fit_transform(self.X_val.astype(np.float64))
+        # # Scaling the data with StandardScaler
+        # self.X_train_scaled = StandardScaler().fit_transform(self.X_train.astype(np.float64))
+        # self.X_test_scaled = StandardScaler().transform(self.X_test.astype(np.float64))
+        # self.X_val_scaled = StandardScaler().transform(self.X_val.astype(np.float64))
+        # Create a StandardScaler instance
+        scaler = StandardScaler()
+
+        # Fit the scaler to the training data and transform the training set
+        self.X_train_scaled = scaler.fit_transform(self.X_train.astype(np.float64))
+
+        # Transform the testing and validation sets using the fitted scaler
+        self.X_test_scaled = scaler.transform(self.X_test.astype(np.float64))
+        self.X_val_scaled = scaler.transform(self.X_val.astype(np.float64))
+
 
 
         # Train models
@@ -408,14 +418,33 @@ class Model():
 
         plt.show()
 
+        #-------------------------------------
+        count = Counter(ye)
+        print(count)
+        total_count = sum(count.values())
+
+        percentages = {}
+        for label, count in count.items():
+            percentages['Graduate' if label == 1 else 'Dropout'] = str(round((count / total_count) * 100, 2)) + '%'
+
+        print(percentages)
+        #-------------------------------------
+
+
+        #-------------------------------------
         stat_sum_tra = xt_2sem_app.agg(['median', 'mean', 'min', 'max', 'std'])
         stat_sum_enr = xe_2sem_app.agg(['median', 'mean', 'min', 'max', 'std'])
+        #-------------------------------------
 
+        #-------------------------------------
         stat_sum = self.X_train.agg(['median', 'min', 'max', 'std'])
         stat_sum_sc = self.X_enr.agg(['median', 'min', 'max', 'std'])
         df1stat = stat_sum.transpose()
         df2stat = stat_sum_sc.transpose()
+        #-------------------------------------
 
+        #-------------------------------------
         df1styler = df1stat.style.set_table_attributes("style='display:inline'").set_caption('Statistics X_train')
         df2styler = df2stat.style.hide(axis='index').set_table_attributes("style='display:inline'").set_caption('Statistics X_enrolled')
         display_html(df1styler._repr_html_() + df2styler._repr_html_(), raw=True)
+        #-------------------------------------
