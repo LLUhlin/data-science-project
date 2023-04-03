@@ -25,11 +25,14 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 
 import streamlit as st
 
+from model_streamlit import *
+
 # import data
 df = pd.read_csv('/Users/nima/Downloads/PROJ25/gruppuppgift/02_dataset/student_dropout_success/data.csv', sep=';')
 #df = pd.read_csv('./data.csv', sep=';') # using relative path instead to not be locked to 1 computer
 
 nav = st.sidebar.radio("NAVIGATION BAR",["START", "DATA EXPLORATION", "DATA PREPROCESSING", "MODEL DEVELOPMENT", "MODEL EVALUATION", "PROJECT CONCLUSIONS"])
+
 
 
 if nav == "START":
@@ -39,6 +42,7 @@ if nav == "START":
     
     image = Image.open('/Users/nima/Downloads/PROJ25/gruppuppgift/04_presentation/dropout.jpg')
     st.image(image, caption='GRADUATE OR DROPOUT?')
+
 
    
 if nav == "DATA EXPLORATION":
@@ -154,7 +158,23 @@ if nav == "DATA PREPROCESSING":
     
 if nav == "MODEL DEVELOPMENT":
     st.title("model develop")
-    st.write("""Read the model.""")
+    st.write("""
+    ##### • Training and choosing Models
+    Fifteen different models was trained on the dataset. This code has been removed from the notebook since it's redundant.
+
+    Out of these fifteen models was the five with most potential chosen for further investigation. A summary was done over the performance of the five models, also looking at the confusion matrix for the different models to see the difference in predictions between the models. The conclusion is that some are better at predicting 'Dropout' and others at predicting 'Graduate'. But there are no noteworthy differences between them.
+    ##### • K-fold Cross Validation
+    K-fold Cross Validation was done on the chosen five models to check for discrepancies.
+    ##### • Hyperparameter Tuning
+    Hyperparameter tuning was performed on these five models, but the outcome did however not show any siginificant improvements compared to the models default settings for the hyperparameters. Therefor the choice was made to use the default settings. This code has been removed from the notebook since it's redundant.
+    ##### • Balancing dataset
+    Since the dataset was slighlty unbalanced a test was done with balancing the training dataset with the Undersampling and the Oversampling technique in the imblearn library. The purpose was to see if the results could be improved further, the only model that improved slighlty in accuracy was the Gradient Boosting Classifier, the other models gave no improvements. The decision was made not to balance the training dataset. This code has been removed from the notebook since it's redundant.
+    ##### • Dropping features
+    As a final test several features was dropped from the dataset to see if this could improve the prediction results. 17 features was dropped and was chosen from those that had the least correlation with the Target attribute. Training the models on the dataset with dropped features had no significane on the result at all. This code has been removed from the notebook since it's redundant. 
+    ##### • Ensemble method
+    Finally was different combinations of the five models used tested in an ensemble method, VotingClassifier. This method gave a more stable outcome on the prediction result. The most satisfactory result with VotingClassifier was with Logistic Regression, Random Forest Classifier, Support Vector Classifier and Gradient Boosting Classifier combined together. This combination was chosen as the final model and will be evaulated in the next step with the untouched validation dataset.
+    """)
+    st.write(test.df.head())
     
     
 if nav == "MODEL EVALUATION":
