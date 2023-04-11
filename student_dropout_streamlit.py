@@ -6,6 +6,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 from collections import Counter
+
 from sklearn.metrics import * 
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import LabelEncoder
@@ -107,24 +108,37 @@ def vc_load():
 @st.cache_data
 def k_fold_cv(_CLF, X_train, X_train_scaled, y_train):
     k = 5
-
+    
     # Define the K-fold cross-validation object
     kf = KFold(n_splits=k, shuffle=True, random_state=42)
-    kf_result = pd.DataFrame(columns = ['Accuracy']) 
+    kf_result = pd.DataFrame(columns=['Accuracy', 'Variance', 'Bias', 'Overfitting']) 
 
-    # Perform K-fold cross-validation on each model and compute accuracy scores
+    # Perform K-fold cross-validation on each model and compute accuracy, variance, bias, and overfitting scores
     for clf_name, clf in _CLF.items():
         accuracies = []
+        variances = []
+        biases = []
+        overfittings = []
         for train_index, test_index in kf.split(X_train):
             X_fold_train, X_fold_test = X_train_scaled[train_index], X_train_scaled[test_index]
             y_fold_train, y_fold_test = y_train.iloc[train_index], y_train.iloc[test_index]
             clf.fit(X_fold_train, y_fold_train)
-            y_pred = clf.predict(X_fold_test)
-            accuracy = accuracy_score(y_fold_test, y_pred)
+            y_pred_train = clf.predict(X_fold_train)
+            y_pred_test = clf.predict(X_fold_test)
+            accuracy = accuracy_score(y_fold_test, y_pred_test)
+            variance = np.var(y_pred_test)
+            bias = np.mean(y_pred_test) - np.mean(y_fold_test)
+            overfitting = accuracy - accuracy_score(y_fold_train, y_pred_train)
             accuracies.append(accuracy)
+            variances.append(variance)
+            biases.append(bias)
+            overfittings.append(overfitting)
         mean_accuracy = np.sum(accuracies) / k
-        new_row = pd.DataFrame({'Accuracy':mean_accuracy},
-                    index=[clf_name])
+        mean_variance = np.sum(variances) / k
+        mean_bias = np.sum(biases) / k
+        mean_overfitting = np.sum(overfittings) / k
+        new_row = pd.DataFrame({'Accuracy': mean_accuracy, 'Variance': mean_variance, 'Bias': mean_bias, 'Overfitting': mean_overfitting},
+                               index=[clf_name])
         kf_result = pd.concat([kf_result, new_row], axis=0)
     return kf_result
 
@@ -180,15 +194,15 @@ def tuning_hypterparameters(_CLF):
     return res_hyp_par
 
 @st.cache_data
-def ensemble_all_models(_CLF, X_train_scaled, y_train, X_val_scaled, y_val):
-    summa = pd.DataFrame(columns = ['Train Accuracy','Validate Accuracy']) 
+def ensemble_all_models(_CLF, X_train_scaled, y_train, X_val_scaled, y_val, option):
+    summa = pd.DataFrame(columns = ['Train Accuracy', f'{option} Accuracy']) 
 
     for comb in _CLF:
         model = _CLF[comb]
         model.fit(X_train_scaled, y_train)
         acc_tr = model.score(X_train_scaled, y_train)
         acc_te = model.score(X_val_scaled, y_val)
-        new_row = pd.DataFrame({'Train Accuracy':acc_tr, 'Validate Accuracy':acc_te}, index=[comb[:-4]])
+        new_row = pd.DataFrame({'Train Accuracy':acc_tr, f'{option} Accuracy':acc_te}, index=[comb[:-4]])
         summa = pd.concat([summa, new_row], axis=0)
 
     return summa
@@ -235,11 +249,10 @@ def add_to_axis(ax, ax2, X_train, X_train_scaled, y_train, _CLF, labelsize, titl
 
 @st.cache_resource
 def models_important_features(X_train, X_train_scaled, y_train, _CLF, width=10, height=5, labelsize=7, titlesize=9, limit=15):
-
-    fig1, ax1 = plt.subplots(math.ceil(len(_CLF.keys())/2), 2, figsize=(width, math.ceil(len(_CLF.keys())/2)*height), tight_layout = True) 
-    fig2, ax2 = plt.subplots(math.ceil(len(_CLF.keys())/2), 2, figsize=(width, math.ceil(len(_CLF.keys())/2)*height), tight_layout = True) 
-
-    add_to_axis(ax1, ax2, X_train, X_train_scaled, y_train, _CLF, labelsize, titlesize, limit)
+    clf = {key: value for key, value in _CLF.items() if key != "Linear Discriminant Analysis"}
+    fig1, ax1 = plt.subplots(math.ceil(len(clf.keys())/2), 2, figsize=(width, math.ceil(len(clf.keys())/2)*height), tight_layout = True) 
+    fig2, ax2 = plt.subplots(math.ceil(len(clf.keys())/2), 2, figsize=(width, math.ceil(len(clf.keys())/2)*height), tight_layout = True) 
+    add_to_axis(ax1, ax2, X_train, X_train_scaled, y_train, clf, labelsize, titlesize, limit)
 
 
     fig1.suptitle("\n\n".join(['', "Important Features per classifier", '']), y=0.98, fontsize=titlesize*2 )
@@ -334,6 +347,7 @@ def enrolled_count_percentage(ye):
         df = pd.concat([df, new_row], axis=0)
     
     return df
+
 """ ------------------------------------------------------------------------------------------------------------------------- """
 
 nav = st.sidebar.radio("NAVIGATION BAR",["START", "DATA EXPLORATION", "DATA PREPROCESSING", "MODEL DEVELOPMENT", "MODEL EVALUATION", "PROJECT CONCLUSIONS"])
@@ -372,9 +386,9 @@ CLF = clf_load()
 kf_result = k_fold_cv(CLF, X_train, X_train_scaled, y_train)
 plt_clf, sum_clf = summary_clf(CLF, X_val_scaled, X_train_scaled, y_train, df2)
 hyper_tuning = tuning_hypterparameters(RSCV_CLF)
-ensemble_models = ensemble_all_models(VC_CLF, X_train_scaled, y_train, X_val_scaled, y_val)
+ensemble_models = ensemble_all_models(VC_CLF, X_train_scaled, y_train, X_val_scaled, y_val, 'Validate')
 
-ensemble_test_models = ensemble_all_models(VC_CLF, X_train_scaled, y_train, X_test_scaled, y_test)
+ensemble_test_models = ensemble_all_models(VC_CLF, X_train_scaled, y_train, X_test_scaled, y_test , 'Test').loc['LR, RFC, SVC, GBC', :]
 roc_score = roc_comparison(CLF, X_train_scaled, y_train, X_test_scaled, y_test)
 all_features, top_features = models_important_features(X_train, X_train_scaled, y_train, CLF, limit=10)
 
@@ -515,18 +529,18 @@ if nav == "MODEL DEVELOPMENT":
     st.subheader("• Hyperparameter Tuning")
     st.write("""Hyperparameter tuning was performed on the 5 models, using the method RandomizedSearchCV. The outcome did however not show any improvements compared to the models default settings for the hyperparameters. Therefor the choice was made to use the default settings.""")
     
-    st.dataframe(hyper_tuning)
+    st.dataframe(hyper_tuning, width=1500)
     
     st.subheader("• Balancing the dataset")
-    st.write("""Here we looped back to the Data Preprocessing, since the dataset was slighlty unbalanced a test was done with balancing the training dataset with the Undersampling and the Oversampling technique in the imblearn library. The purpose was to see if the results could be improved further, the only model that improved slighlty in accuracy was the Gradient Boosting Classifier, the other models gave no improvements. The decision was made not to balance the training dataset. This code has been removed from the notebook since it's redundant.""")
+    st.write("""Here we looped back to the Data Preprocessing, since the dataset was slighlty unbalanced a test was done with balancing the training dataset with the Undersampling and the Oversampling technique in the imblearn library. The purpose was to see if the results could be improved further, the only model that improved slighlty in accuracy was the Gradient Boosting Classifier, the other models gave no improvements. The decision was made not to balance the training dataset.""")
     
     st.subheader("• Dropping features")
-    st.write("""Here we also looped back to the Data Preprocessing, several features was dropped from the dataset to see if this could improve the prediction results. 17 features was dropped and was chosen from those that had the least correlation with the Target attribute. Training the models on the dataset with dropped features had no significane on the result at all. This code has been removed from the notebook since it's redundant.""")
+    st.write("""Here we also looped back to the Data Preprocessing, several features was dropped from the dataset to see if this could improve the prediction results. 17 features was dropped and was chosen from those that had the least correlation with the Target attribute. Training the models on the dataset with dropped features had no significane on the result at all.""")
     
     st.subheader("• Ensemble method")
     st.write("""Finally was different combinations of the 5 models used tested in an ensemble method, VotingClassifier. This method gave a more stable outcome on the prediction results and a more satisfactory result.""")
 
-    st.dataframe(ensemble_models.style.format("{:.2%}"))
+    st.dataframe(ensemble_models.style.format("{:.2%}"), width=500)
 
 
     # res_hyp_par = pd.DataFrame(columns = ['Accuracy', 'Optimized hyperparameters'])
@@ -544,12 +558,12 @@ if nav == "MODEL DEVELOPMENT":
 if nav == "MODEL EVALUATION":
     st.header("MODEL EVALUATION")
     st.write("""In this step we evaluate our chosen model on the untouched test dataset. We also look at some scoring and feature importance.""")
-    st.dataframe(ensemble_test_models.style.format("{:.2%}"))
-    st.write("""ROC theevaluation.""")
+    st.dataframe(pd.DataFrame(ensemble_test_models).transpose().style.format("{:.2%}"))
+    st.write("""Receiver Operating Characteristic""")
     st.pyplot(roc_score)
-    st.write("""ALL features theevaluation.""")
+    st.write("""All important features.""")
     st.pyplot(all_features)
-    st.write("""Top features theevaluation.""")
+    st.write("""Top 10 important features.""")
     st.pyplot(top_features)
 
 
@@ -566,12 +580,19 @@ if nav == "PROJECT CONCLUSIONS":
     st.pyplot(enrolled_test_fig)
     
     st.write("""It was hard to see any clear correlation between the feature values. However the percentage that was predicted to dropout in the Enrolled dataset is in clear correlation with the actual percentage of dropouts taken from the university statistics.""")
+    
+    st.write("""Prediction from final model""")
     st.dataframe(enr_count_perc)
     
     st.write('Data gathered from Polytechnic Institute of Portalegre between 2018 and 2020')
-    st.write('Bachelor graduation rate: 61.3%')
-    st.write('Masters graduation rate: 46.24%')
+    tt = np.array(['61.3%', '46.24%'])
+    st.dataframe(pd.DataFrame(tt,  index=["Bachelor", "Master"], columns=['Graduation Rate']))
+    # st.write('Bachelor graduation rate: 61.3%')
+    # st.write('Masters graduation rate: 46.24%')
     st.write('Assuming we have a student distribution of 80% Bachelor and 20% Master we would get an average graduate rate of 58.44% with our sample size of 794 students')
-    difference = round(abs(float(enr_count_perc['Percentage']['Graduate'][:-1]) - 58.44), 2)
-    st.write(f'Which gives us a percentage unit difference of {difference}')
+    # difference = round(abs(float(enr_count_perc['Percentage']['Graduate'][:-1]) - 58.44), 2)
+
+    m_g = np.array(['52.02%', '58.44%'])
+    st.dataframe(pd.DataFrame(m_g, index=['Model', 'Calculated'], columns=['Graduation Rate']))
+    st.write('Which tells us that our model is underestimating the students but also shows us that the model can be effectively used to predict who is at risk of dropping out.')
     
